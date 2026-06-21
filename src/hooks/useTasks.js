@@ -23,7 +23,7 @@ export function useTasks(projectId) {
     setError('')
 
     const [projectResult, tasksResult] = await Promise.all([
-      supabase.from('projects').select('*').eq('id', projectId).maybeSingle(),
+      supabase.rpc('get_project', { p_project_id: projectId }),
       supabase
         .from('tasks')
         .select('*, subtasks(*), task_comments(*)')
@@ -39,7 +39,11 @@ export function useTasks(projectId) {
       return
     }
 
-    if (!projectResult.data) {
+    const loadedProject = Array.isArray(projectResult.data)
+      ? projectResult.data[0]
+      : projectResult.data
+
+    if (!loadedProject) {
       setProject(null)
       setTasks([])
       setSubtasks([])
@@ -48,7 +52,7 @@ export function useTasks(projectId) {
       return
     }
 
-    setProject(projectResult.data)
+    setProject(loadedProject)
     setTasks(tasksResult.data ?? [])
     setSubtasks((tasksResult.data ?? []).flatMap((task) => task.subtasks ?? []))
     setComments((tasksResult.data ?? []).flatMap((task) => task.task_comments ?? []))

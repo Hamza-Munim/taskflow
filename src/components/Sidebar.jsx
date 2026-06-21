@@ -71,7 +71,7 @@ export default function Sidebar({
                   style={{ backgroundColor: project.color }}
                 />
                 <span className="min-w-0 flex-1 truncate">{project.name}</span>
-                <span className="text-xs">{project.tasks?.length ?? 0}</span>
+                <span className="text-xs">{project.task_count ?? project.tasks?.length ?? 0}</span>
               </NavLink>
             ))}
           </nav>

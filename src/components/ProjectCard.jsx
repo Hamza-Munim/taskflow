@@ -5,9 +5,11 @@ import { useNavigate } from 'react-router-dom'
 export default function ProjectCard({ project, onDelete, onRename }) {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
-  const tasks = project.tasks ?? []
-  const doneCount = tasks.filter((task) => task.status === 'done').length
-  const progress = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0
+  const taskCount = Number(project.task_count ?? project.tasks?.length ?? 0)
+  const doneCount = Number(
+    project.done_count ?? project.tasks?.filter((task) => task.status === 'done').length ?? 0,
+  )
+  const progress = taskCount ? Math.round((doneCount / taskCount) * 100) : 0
 
   return (
     <article
@@ -39,7 +41,7 @@ export default function ProjectCard({ project, onDelete, onRename }) {
         </button>
       </div>
       <p className="mt-6 text-sm text-taskflow-muted">
-        {tasks.length} tasks · {doneCount} done
+        {taskCount} tasks · {doneCount} done
       </p>
       <div className="mt-3 h-2 rounded-full bg-gray-100">
         <div

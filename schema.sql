@@ -110,6 +110,71 @@ $$;
 
 grant execute on function create_project(text, text, text) to authenticated;
 
+create or replace function list_projects()
+returns table (
+  id uuid,
+  owner_id uuid,
+  name text,
+  description text,
+  color text,
+  created_at timestamp with time zone,
+  updated_at timestamp with time zone,
+  task_count bigint,
+  done_count bigint
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    p.id,
+    p.owner_id,
+    p.name,
+    p.description,
+    p.color,
+    p.created_at,
+    p.updated_at,
+    count(t.id) as task_count,
+    count(t.id) filter (where t.status = 'done') as done_count
+  from projects p
+  left join tasks t on t.project_id = p.id
+  where p.owner_id = auth.uid()
+  group by p.id
+  order by p.updated_at desc;
+$$;
+
+grant execute on function list_projects() to authenticated;
+
+create or replace function get_project(p_project_id uuid)
+returns table (
+  id uuid,
+  owner_id uuid,
+  name text,
+  description text,
+  color text,
+  created_at timestamp with time zone,
+  updated_at timestamp with time zone
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    p.id,
+    p.owner_id,
+    p.name,
+    p.description,
+    p.color,
+    p.created_at,
+    p.updated_at
+  from projects p
+  where p.id = p_project_id
+  and p.owner_id = auth.uid()
+  limit 1;
+$$;
+
+grant execute on function get_project(uuid) to authenticated;
+
 alter table profiles enable row level security;
 alter table projects enable row level security;
 alter table tasks enable row level security;

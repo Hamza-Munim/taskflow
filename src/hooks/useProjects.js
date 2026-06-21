@@ -24,11 +24,7 @@ export function useProjects() {
     setLoading(true)
     setError('')
 
-    const { data, error: requestError } = await supabase
-      .from('projects')
-      .select('*, tasks(id, status)')
-      .eq('owner_id', user.id)
-      .order('updated_at', { ascending: false })
+    const { data, error: requestError } = await supabase.rpc('list_projects')
 
     if (requestError) {
       setError(requestError.message)
