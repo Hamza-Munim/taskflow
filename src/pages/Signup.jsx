@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import AuthShell from '../components/AuthShell'
 import FormField from '../components/FormField'
 import { useAuth } from '../hooks/useAuth'
@@ -43,6 +44,12 @@ export default function Signup() {
         id: data.user.id,
         full_name: values.fullName,
       })
+    }
+
+    if (!data.session) {
+      toast.success('Account created. Please check your email, then log in.')
+      navigate('/login', { replace: true })
+      return
     }
 
     navigate('/dashboard', { replace: true })

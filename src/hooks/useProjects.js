@@ -10,7 +10,11 @@ export function useProjects() {
   const [error, setError] = useState('')
 
   const fetchProjects = useCallback(async () => {
-    if (!user) return
+    if (!user) {
+      setProjects([])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -37,9 +41,18 @@ export function useProjects() {
   const actions = useMemo(
     () => ({
       createProject: async (payload) => {
+        const {
+          data: { user: currentUser },
+          error: authError,
+        } = await supabase.auth.getUser()
+
+        if (authError || !currentUser) {
+          throw new Error('Please log in again before creating a project.')
+        }
+
         const { data, error: requestError } = await supabase
           .from('projects')
-          .insert({ ...payload, owner_id: user.id })
+          .insert({ ...payload, owner_id: currentUser.id })
           .select()
           .single()
 
@@ -66,7 +79,7 @@ export function useProjects() {
       },
       refetch: fetchProjects,
     }),
-    [fetchProjects, user],
+    [fetchProjects],
   )
 
   return { projects, loading, error, ...actions }
