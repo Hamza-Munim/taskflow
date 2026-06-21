@@ -7,23 +7,35 @@ import CreateProjectModal from '../components/CreateProjectModal'
 import CreateTaskModal from '../components/CreateTaskModal'
 import KanbanColumn from '../components/KanbanColumn'
 import SearchFilterBar from '../components/SearchFilterBar'
+import TaskDetailModal from '../components/TaskDetailModal'
+import { useAuth } from '../hooks/useAuth'
 import { useTasks } from '../hooks/useTasks'
 import { STATUSES, isOverdue } from '../utils/taskConfig'
 
 export default function ProjectBoard() {
   const { projectId } = useParams()
+  const { profile } = useAuth()
   const {
+    addComment,
+    addSubtask,
     createTask,
+    comments,
+    deleteSubtask,
+    deleteTask,
     loading,
     project,
     reorderTasks,
+    subtasks,
     tasks,
+    updateSubtask,
+    updateTask,
     updateProject,
   } = useTasks(projectId)
   const [search, setSearch] = useState('')
   const [priority, setPriority] = useState('all')
   const [overdueOnly, setOverdueOnly] = useState(false)
   const [taskModalStatus, setTaskModalStatus] = useState(null)
+  const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [editingProject, setEditingProject] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -44,6 +56,8 @@ export default function ProjectBoard() {
       return groups
     }, {})
   }, [filteredTasks])
+
+  const selectedTask = tasks.find((task) => task.id === selectedTaskId)
 
   async function handleCreateTask(values) {
     try {
@@ -153,7 +167,7 @@ export default function ProjectBoard() {
                 status={status}
                 tasks={groupedTasks[status.id] || []}
                 onAddTask={setTaskModalStatus}
-                onTaskClick={() => {}}
+                onTaskClick={(task) => setSelectedTaskId(task.id)}
               />
             ))}
           </div>
@@ -173,6 +187,21 @@ export default function ProjectBoard() {
           initialValues={project}
           onClose={() => setEditingProject(false)}
           onSubmit={handleProjectRename}
+        />
+      ) : null}
+      {selectedTask ? (
+        <TaskDetailModal
+          comments={comments}
+          onAddComment={addComment}
+          onAddSubtask={addSubtask}
+          onClose={() => setSelectedTaskId(null)}
+          onDeleteTask={deleteTask}
+          onDeleteSubtask={deleteSubtask}
+          onUpdateSubtask={updateSubtask}
+          onUpdateTask={updateTask}
+          profile={profile}
+          subtasks={subtasks}
+          task={selectedTask}
         />
       ) : null}
     </AppLayout>
