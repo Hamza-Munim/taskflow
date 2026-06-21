@@ -52,7 +52,7 @@ export function useProjects() {
 
         const { data, error: requestError } = await supabase
           .from('projects')
-          .insert({ ...payload, owner_id: currentUser.id })
+          .insert(payload)
           .select()
           .single()
 

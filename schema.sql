@@ -9,7 +9,7 @@ create table if not exists profiles (
 
 create table if not exists projects (
   id uuid default gen_random_uuid() primary key,
-  owner_id uuid references auth.users(id) on delete cascade not null,
+  owner_id uuid default auth.uid() references auth.users(id) on delete cascade not null,
   name text not null,
   description text,
   color text default '#6366F1',
@@ -85,6 +85,8 @@ alter table projects enable row level security;
 alter table tasks enable row level security;
 alter table task_comments enable row level security;
 alter table subtasks enable row level security;
+
+alter table projects alter column owner_id set default auth.uid();
 
 create policy "Users can read own profile" on profiles
 for select using (id = auth.uid());
