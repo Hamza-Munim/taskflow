@@ -1,16 +1,58 @@
-# React + Vite
+# TaskFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TaskFlow is a full-stack Kanban task management app built with React, Vite, Tailwind CSS, Supabase Auth, and Supabase Postgres.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Email/password signup and login with Supabase Auth
+- User-owned projects with color accents and progress summaries
+- Kanban boards with To Do, In Progress, Review, and Done columns
+- Drag-and-drop task movement and ordering with persisted positions
+- Task metadata: priority, due date, assignee, description, status
+- Task detail drawer with checklist items and comments
+- Search, priority filtering, and overdue filtering
+- Responsive sidebar and horizontally scrollable mobile board
 
-## React Compiler
+## Local Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Install dependencies:
 
-## Expanding the ESLint configuration
+```powershell
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Create a `.env` file:
+
+```env
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+Run the development server:
+
+```powershell
+npm run dev
+```
+
+Build for production:
+
+```powershell
+npm run build
+```
+
+## Supabase Setup
+
+1. Create a Supabase project.
+2. Open the SQL Editor.
+3. Paste and run the contents of `schema.sql`.
+4. Copy your Project URL and anon public key into `.env`.
+5. In Authentication settings, configure email confirmation according to your preference.
+
+## Deployment
+
+Deploy the frontend to Vercel or Netlify and set these environment variables in the hosting dashboard:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+The backend is Supabase cloud, so no Express server is required.
