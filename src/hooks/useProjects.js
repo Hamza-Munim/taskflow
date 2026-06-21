@@ -51,10 +51,11 @@ export function useProjects() {
         }
 
         const { data, error: requestError } = await supabase
-          .from('projects')
-          .insert(payload)
-          .select()
-          .single()
+          .rpc('create_project', {
+            project_name: payload.name,
+            project_description: payload.description || null,
+            project_color: payload.color || '#6366F1',
+          })
 
         if (requestError) throw requestError
         toast.success('Project created')
