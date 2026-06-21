@@ -62,6 +62,7 @@ export default function ProjectBoard() {
   }, [filteredTasks])
 
   const selectedTask = tasks.find((task) => task.id === selectedTaskId)
+  const projectMissing = !loading && !project
 
   async function handleCreateTask(values) {
     try {
@@ -146,10 +147,11 @@ export default function ProjectBoard() {
         <div>
           <button
             type="button"
-            onClick={() => setEditingProject(true)}
+            onClick={() => project && setEditingProject(true)}
+            disabled={!project}
             className="text-left text-2xl font-bold text-taskflow-text hover:text-taskflow-primary"
           >
-            {project?.name || 'Loading project...'}
+            {project?.name || (projectMissing ? 'Project not found' : 'Loading project...')}
           </button>
           <p className="mt-1 text-sm text-taskflow-muted">
             {project?.description || 'Build and move work across your team flow.'}
@@ -166,7 +168,23 @@ export default function ProjectBoard() {
         onOverdueChange={setOverdueOnly}
       />
 
-      {loading ? (
+      {projectMissing ? (
+        <div className="flex min-h-[45vh] items-center justify-center rounded-lg border border-dashed border-taskflow-border bg-white">
+          <div className="max-w-sm px-6 text-center">
+            <h2 className="text-lg font-semibold text-taskflow-text">This project could not be opened</h2>
+            <p className="mt-2 text-sm text-taskflow-muted">
+              It may have been created before the app received a valid project id. Go back to your dashboard and open it from there.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="mt-5 rounded-lg bg-taskflow-primary px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+            >
+              Back to dashboard
+            </button>
+          </div>
+        </div>
+      ) : loading ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
           {STATUSES.map((status) => (
             <div key={status.id} className="h-[60vh] animate-pulse rounded-lg bg-white" />

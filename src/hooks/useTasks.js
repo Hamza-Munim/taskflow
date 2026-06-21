@@ -11,12 +11,19 @@ export function useTasks(projectId) {
   const [error, setError] = useState('')
 
   const fetchBoard = useCallback(async () => {
-    if (!projectId) return
+    if (!projectId) {
+      setProject(null)
+      setTasks([])
+      setSubtasks([])
+      setComments([])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError('')
 
     const [projectResult, tasksResult] = await Promise.all([
-      supabase.from('projects').select('*').eq('id', projectId).single(),
+      supabase.from('projects').select('*').eq('id', projectId).maybeSingle(),
       supabase
         .from('tasks')
         .select('*, subtasks(*), task_comments(*)')
@@ -28,6 +35,15 @@ export function useTasks(projectId) {
       const message = projectResult.error?.message || tasksResult.error?.message
       setError(message)
       toast.error(message)
+      setLoading(false)
+      return
+    }
+
+    if (!projectResult.data) {
+      setProject(null)
+      setTasks([])
+      setSubtasks([])
+      setComments([])
       setLoading(false)
       return
     }

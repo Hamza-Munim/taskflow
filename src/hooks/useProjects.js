@@ -3,6 +3,12 @@ import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from './useAuth'
 
+const PROJECTS_CHANGED_EVENT = 'taskflow:projects-changed'
+
+function notifyProjectsChanged() {
+  window.dispatchEvent(new Event(PROJECTS_CHANGED_EVENT))
+}
+
 export function useProjects() {
   const { user } = useAuth()
   const [projects, setProjects] = useState([])
@@ -38,6 +44,11 @@ export function useProjects() {
     fetchProjects()
   }, [fetchProjects])
 
+  useEffect(() => {
+    window.addEventListener(PROJECTS_CHANGED_EVENT, fetchProjects)
+    return () => window.removeEventListener(PROJECTS_CHANGED_EVENT, fetchProjects)
+  }, [fetchProjects])
+
   const actions = useMemo(
     () => ({
       createProject: async (payload) => {
@@ -58,9 +69,15 @@ export function useProjects() {
           })
 
         if (requestError) throw requestError
+        const createdProject = Array.isArray(data) ? data[0] : data
+        if (!createdProject?.id) {
+          throw new Error('Project was created, but Supabase did not return its id.')
+        }
+
         toast.success('Project created')
         await fetchProjects()
-        return data
+        notifyProjectsChanged()
+        return createdProject
       },
       updateProject: async (projectId, updates) => {
         const { error: requestError } = await supabase
@@ -71,12 +88,14 @@ export function useProjects() {
         if (requestError) throw requestError
         toast.success('Project updated')
         await fetchProjects()
+        notifyProjectsChanged()
       },
       deleteProject: async (projectId) => {
         const { error: requestError } = await supabase.from('projects').delete().eq('id', projectId)
         if (requestError) throw requestError
         toast.success('Project deleted')
         await fetchProjects()
+        notifyProjectsChanged()
       },
       refetch: fetchProjects,
     }),
