@@ -1,6 +1,6 @@
 import { DndContext, PointerSensor, closestCorners, useSensor, useSensors } from '@dnd-kit/core'
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import AppLayout from '../components/AppLayout'
 import CreateProjectModal from '../components/CreateProjectModal'
@@ -9,12 +9,15 @@ import KanbanColumn from '../components/KanbanColumn'
 import SearchFilterBar from '../components/SearchFilterBar'
 import TaskDetailModal from '../components/TaskDetailModal'
 import { useAuth } from '../hooks/useAuth'
+import { useProjects } from '../hooks/useProjects'
 import { useTasks } from '../hooks/useTasks'
 import { STATUSES, isOverdue } from '../utils/taskConfig'
 
 export default function ProjectBoard() {
   const { projectId } = useParams()
+  const navigate = useNavigate()
   const { profile } = useAuth()
+  const { createProject } = useProjects()
   const {
     addComment,
     addSubtask,
@@ -36,6 +39,7 @@ export default function ProjectBoard() {
   const [overdueOnly, setOverdueOnly] = useState(false)
   const [taskModalStatus, setTaskModalStatus] = useState(null)
   const [selectedTaskId, setSelectedTaskId] = useState(null)
+  const [creatingProject, setCreatingProject] = useState(false)
   const [editingProject, setEditingProject] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -83,6 +87,16 @@ export default function ProjectBoard() {
     }
   }
 
+  async function handleCreateProject(values) {
+    try {
+      const nextProject = await createProject(values)
+      setCreatingProject(false)
+      navigate(`/project/${nextProject.id}`)
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
   async function handleDragEnd(event) {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -124,7 +138,7 @@ export default function ProjectBoard() {
   return (
     <AppLayout
       breadcrumb={`Dashboard > ${project?.name || 'Project'}`}
-      onCreateProject={() => setEditingProject(true)}
+      onCreateProject={() => setCreatingProject(true)}
       search={search}
       onSearchChange={setSearch}
     >
@@ -187,6 +201,12 @@ export default function ProjectBoard() {
           initialValues={project}
           onClose={() => setEditingProject(false)}
           onSubmit={handleProjectRename}
+        />
+      ) : null}
+      {creatingProject ? (
+        <CreateProjectModal
+          onClose={() => setCreatingProject(false)}
+          onSubmit={handleCreateProject}
         />
       ) : null}
       {selectedTask ? (
